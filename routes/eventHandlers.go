@@ -2,7 +2,6 @@ package routes
 
 import (
 	"eventapi/models"
-	"eventapi/utils"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -42,30 +41,16 @@ func getEvent(context *gin.Context) {
 // create event handler
 func createEvent(context *gin.Context) {
 
-	token := context.Request.Header.Get("Authorization")
-
-	if token == "" {
-		context.JSON(http.StatusUnauthorized, gin.H{"message": "No API token exists!"})
-		return
-	}
-
-	userId, err := utils.VerifyToken(token)
-
-	if err != nil {
-		context.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid API key!"})
-		return
-	}
-
 	var event models.Event
 
-	err = context.ShouldBindJSON(&event)
+	err := context.ShouldBindJSON(&event)
 
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse data"})
 		return
 	}
 
-	event.UserID = userId
+	event.UserID = context.GetInt64("userId")
 	event.Save()
 	fmt.Println("Last inserted ID:", event)
 	context.JSON(http.StatusCreated, gin.H{"messsage": "Event created!", "event": event})
@@ -80,10 +65,16 @@ func updateEvent(context *gin.Context) {
 		return
 	}
 
-	_, err = models.GetEventById(eventId)
+	userId := context.GetInt64("userId")
+	event, err := models.GetEventById(eventId)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "There is no event found"})
+		return
+	}
+
+	if event.UserID != userId {
+		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not authorized to update event"})
 		return
 	}
 
@@ -115,11 +106,16 @@ func deleteEvent(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event Id"})
 		return
 	}
-
+	userId := context.GetInt64("userId")
 	event, err := models.GetEventById(eventId)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "There is no event found"})
+		return
+	}
+
+	if event.UserID != userId {
+		context.JSON(http.StatusUnauthorized, gin.H{"message": "Not authorized to delete event"})
 		return
 	}
 
