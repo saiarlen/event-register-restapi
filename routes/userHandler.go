@@ -8,12 +8,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Signup saves user to database if user is signed up.
+//
+// @param context - to pass to api
 func signup(context *gin.Context) {
 
 	var user models.User
 
 	err := context.ShouldBindJSON(&user)
 
+	// error is not nil error is returned
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse data"})
 		return
@@ -30,6 +34,9 @@ func signup(context *gin.Context) {
 
 }
 
+// login validates user credentials and generates a token for the user. It is used by clients to log in to Gin
+//
+// @param context - Context to pass to
 func login(context *gin.Context) {
 	var user models.User
 

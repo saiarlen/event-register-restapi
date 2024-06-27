@@ -8,6 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// registerForEvent registers a user for an event. The userId is required to be a valid user id in the event
+//
+// @param context - The Gin context to
 func registerForEvent(context *gin.Context) {
 
 	userId := context.GetInt64("userId")
@@ -36,6 +39,9 @@ func registerForEvent(context *gin.Context) {
 
 }
 
+// CancelRegistration is a handler for cancellation of registration for an event.
+//
+// @param context - The Gin context to
 func cancelRegistration(context *gin.Context) {
 
 	userId := context.GetInt64("userId")
@@ -47,6 +53,7 @@ func cancelRegistration(context *gin.Context) {
 
 	err := event.CancelRegistration(userId)
 
+	// Cancel registration for event.
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not cancel registration for event."})
 		return

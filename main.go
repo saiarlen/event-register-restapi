@@ -8,11 +8,11 @@ import (
 )
 
 func main() {
-	database.InitDB()
-	server := gin.Default()
+	database.InitDB()       //init db
+	server := gin.Default() //init server
 
-	routes.RegisterRoutes(server)
+	routes.RegisterRoutes(server) //registering routes
 
-	server.Run(":9000") // localhsot:9000
+	server.Run(":9000") // localhost:9000
 
 }
